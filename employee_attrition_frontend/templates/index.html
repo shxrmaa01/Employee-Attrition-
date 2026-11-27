@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PeoplePulse | Employee Attrition Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar">
+    <a class="brand" href="/"><span class="brand-mark">P</span><span>People<span class="brand-light">Pulse</span></span></a>
+    <div class="side-label">WORKSPACE</div>
+    <a class="nav-item active" href="/"><span>▦</span> Overview</a>
+    <a class="nav-item" href="#predict"><span>✳</span> Attrition prediction</a>
+    <a class="nav-item" href="#bulk"><span>⇧</span> Bulk analysis</a>
+    <div class="sidebar-bottom"><div class="avatar">HR</div><div><b>HR Analytics</b><small>Prediction workspace</small></div></div>
+  </aside>
+  <main class="main">
+    <header class="topbar"><div><span class="eyebrow">PEOPLE ANALYTICS / OVERVIEW</span><h1>Employee intelligence</h1></div><div class="top-right"><span class="live-dot"></span> Model workspace <span class="profile">PS</span></div></header>
+    {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}{% for category,message in messages %}<div class="alert {{category}}">{{message}}</div>{% endfor %}{% endif %}{% endwith %}
+    <section class="welcome"><div><div class="eyebrow pale">PREDICT. UNDERSTAND. RETAIN.</div><h2>See the signals before<br>good people leave.</h2><p>Use your trained machine-learning model to estimate employee attrition risk and support smarter retention decisions.</p></div><div class="welcome-art"><div class="orb orb-one"></div><div class="orb orb-two"></div><div class="art-card"><span>ATTRITION MODEL</span><strong>AI<span> / </span>HR</strong><small>Decision intelligence</small></div></div></section>
+    <section class="metric-grid">
+      <article class="metric-card"><div class="metric-top"><span>Employees in dataset</span><span class="metric-icon">♙</span></div><strong>1,470</strong><small>IBM HR Attrition dataset</small></article>
+      <article class="metric-card"><div class="metric-top"><span>Historical attrition</span><span class="metric-icon">↗</span></div><strong>16.1%</strong><small>237 employees marked “Yes”</small></article>
+      <article class="metric-card"><div class="metric-top"><span>Test ROC-AUC</span><span class="metric-icon">◎</span></div><strong>0.812</strong><small>Notebook evaluation result</small></article>
+      <article class="metric-card"><div class="metric-top"><span>Test accuracy</span><span class="metric-icon">✓</span></div><strong>85%</strong><small>At selected threshold</small></article>
+    </section>
+    <div class="section-heading"><div><span class="eyebrow">MODEL TOOLS</span><h2>Analyze your workforce</h2></div><span class="subtle">Choose a prediction method</span></div>
+    <section class="tool-grid">
+      <article class="panel predict-panel" id="predict">
+        <div class="panel-head"><div class="panel-icon blue">✳</div><div><h3>Single employee prediction</h3><p>Enter employee details to estimate attrition risk.</p></div></div>
+        {% if not model_ready %}<div class="notice"><b>Model file needed</b><br>Place <code>attrition_model.joblib</code> in this project folder after running the notebook's model-saving cell.</div>{% endif %}
+        <form action="/predict" method="post">
+          <div class="form-section-title">EMPLOYEE PROFILE <span>01</span></div>
+          <div class="field-grid">
+          {% for f in fields %}
+            <label class="field"><span>{{ f.label }}</span>
+              {% if f.type == "select" %}
+                <select name="{{f.name}}" required>{% for opt in f.options %}<option value="{{opt}}" {% if loop.first %}selected{% endif %}>{{opt}}</option>{% endfor %}</select>
+              {% else %}
+                <input type="number" name="{{f.name}}" min="{{f.min}}" max="{{f.max}}" value="{{f.default}}" required>
+              {% endif %}
+            </label>
+          {% endfor %}
+          </div>
+          <button class="primary-btn" type="submit" {% if not model_ready %}disabled{% endif %}>Generate attrition prediction <span>→</span></button>
+        </form>
+      </article>
+      <article class="panel bulk-panel" id="bulk">
+        <div class="panel-head"><div class="panel-icon violet">⇧</div><div><h3>Bulk employee analysis</h3><p>Score an entire employee list in one go.</p></div></div>
+        <form action="/bulk" method="post" enctype="multipart/form-data" class="upload-form">
+          <label class="dropzone" for="file-input"><span class="upload-symbol">↑</span><b>Drop your CSV file here</b><span>or click to browse your files</span><small>CSV format · one employee per row</small><input id="file-input" type="file" name="file" accept=".csv" required></label>
+          <button class="primary-btn violet-btn" type="submit" {% if not model_ready %}disabled{% endif %}>Analyze employee list <span>→</span></button>
+        </form>
+        <div class="csv-help"><b>Required format</b><p>Your CSV must contain the same 30 predictor columns used by the notebook. Do not include the target <code>Attrition</code> column.</p></div>
+        <div class="mini-note"><span>ⓘ</span> Results include probability, risk band and predicted Stay/Leave label.</div>
+      </article>
+    </section>
+    <footer>PeoplePulse <span>·</span> Employee Attrition Prediction <span class="footer-right">Model metrics sourced from your Colab notebook</span></footer>
+  </main>
+</div>
+<script>
+const input=document.getElementById('file-input');
+if(input){input.addEventListener('change',()=>{const box=input.closest('.dropzone');if(input.files.length){box.querySelector('b').textContent=input.files[0].name;box.querySelector('span:not(.upload-symbol)').textContent='Ready to analyze';}});}
+</script>
+</body></html>
